@@ -1,2 +1,2 @@
-# defence-stocks-backend
-defence-stocks-backend
+# defence-stocks-ai-server
+defence-stocks-ai-server
