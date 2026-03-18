@@ -15,6 +15,12 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 1440
 
+    redis_host: str = "localhost"
+    redis_port: int = 6379
+    redis_db: int = 0
+    redis_password: str
+    session_expire_minutes: int = 1440
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
