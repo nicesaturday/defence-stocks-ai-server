@@ -2,12 +2,12 @@ from urllib.parse import urlencode
 
 import httpx
 
-from app.domains.auth.adapter.outbound.external.kakao_auth_port import KakaoAuthPort, KakaoUserInfo
+from app.domains.auth.adapter.outbound.external.kakao_auth_port import KakaoAuthPort, KakaoTokenInfo, KakaoUserInfo
 from app.infrastructure.config.settings import settings
 
 
 class KakaoAuthClient(KakaoAuthPort):
-    def get_kakao_access_token(self, authorization_code: str) -> str:
+    def get_kakao_access_token(self, authorization_code: str) -> KakaoTokenInfo:
         response = httpx.post(
             "https://kauth.kakao.com/oauth/token",
             data={
@@ -18,7 +18,12 @@ class KakaoAuthClient(KakaoAuthPort):
             },
         )
         response.raise_for_status()
-        return response.json()["access_token"]
+        data = response.json()
+        return KakaoTokenInfo(
+            access_token=data["access_token"],
+            refresh_token=data.get("refresh_token", ""),
+            expires_in=data.get("expires_in", 0),
+        )
 
     def get_kakao_user_info(self, kakao_access_token: str) -> KakaoUserInfo:
         response = httpx.get(
