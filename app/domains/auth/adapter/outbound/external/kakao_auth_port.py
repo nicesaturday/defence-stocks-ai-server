@@ -3,6 +3,13 @@ from dataclasses import dataclass
 
 
 @dataclass
+class KakaoTokenInfo:
+    access_token: str
+    refresh_token: str
+    expires_in: int
+
+
+@dataclass
 class KakaoUserInfo:
     kakao_id: str
     name: str
@@ -11,7 +18,7 @@ class KakaoUserInfo:
 
 class KakaoAuthPort(ABC):
     @abstractmethod
-    def get_kakao_access_token(self, authorization_code: str) -> str:
+    def get_kakao_access_token(self, authorization_code: str) -> KakaoTokenInfo:
         pass
 
     @abstractmethod

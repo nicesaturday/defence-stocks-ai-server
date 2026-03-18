@@ -18,8 +18,8 @@ class KakaoLoginUseCase:
         self.jwt_provider = jwt_provider
 
     def execute(self, request: KakaoLoginRequest) -> KakaoLoginResponse:
-        kakao_access_token = self.kakao_auth_port.get_kakao_access_token(request.authorization_code)
-        user_info = self.kakao_auth_port.get_kakao_user_info(kakao_access_token)
+        token_info = self.kakao_auth_port.get_kakao_access_token(request.authorization_code)
+        user_info = self.kakao_auth_port.get_kakao_user_info(token_info.access_token)
 
         member = self.member_repository.find_by_kakao_id(user_info.kakao_id)
         if member is None:
