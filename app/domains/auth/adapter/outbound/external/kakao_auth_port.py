@@ -17,3 +17,7 @@ class KakaoAuthPort(ABC):
     @abstractmethod
     def get_kakao_user_info(self, kakao_access_token: str) -> KakaoUserInfo:
         pass
+
+    @abstractmethod
+    def get_oauth_url(self) -> str:
+        pass
