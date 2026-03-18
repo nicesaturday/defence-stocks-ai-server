@@ -1,6 +1,8 @@
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
+from app.domains.account.application.usecase.check_account_registration_usecase import CheckAccountRegistrationUseCase
+from app.domains.account.dependency import get_check_account_registration_usecase
 from app.domains.auth.adapter.outbound.external.kakao_auth_client import KakaoAuthClient
 from app.domains.auth.adapter.outbound.external.kakao_auth_port import KakaoAuthPort
 from app.domains.auth.adapter.outbound.persistence.member_repository import MemberRepository
@@ -40,5 +42,6 @@ def get_request_kakao_oauth_link_usecase(
 
 def get_request_kakao_access_token_usecase(
     kakao_auth_port: KakaoAuthPort = Depends(get_kakao_auth_port),
+    check_account_registration_usecase: CheckAccountRegistrationUseCase = Depends(get_check_account_registration_usecase),
 ) -> RequestKakaoAccessTokenUseCase:
-    return RequestKakaoAccessTokenUseCase(kakao_auth_port)
+    return RequestKakaoAccessTokenUseCase(kakao_auth_port, check_account_registration_usecase)
