@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 
@@ -8,3 +10,5 @@ class KakaoAccessTokenResponse(BaseModel):
     kakao_id: str
     nickname: str
     email: str
+    is_registered: bool
+    account_id: Optional[int] = None
