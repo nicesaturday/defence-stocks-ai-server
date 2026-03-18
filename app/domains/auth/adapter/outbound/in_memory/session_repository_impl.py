@@ -3,7 +3,7 @@ from typing import Optional
 
 import redis
 
-from app.domains.auth.adapter.outbound.persistence.session_repository import SessionRepository
+from app.domains.auth.adapter.outbound.in_memory.session_repository import SessionRepository
 from app.infrastructure.config.settings import settings
 
 
