@@ -1,3 +1,5 @@
+from urllib.parse import urlencode
+
 import httpx
 
 from app.domains.auth.adapter.outbound.external.kakao_auth_port import KakaoAuthPort, KakaoUserInfo
@@ -31,3 +33,11 @@ class KakaoAuthClient(KakaoAuthPort):
             name=kakao_account.get("profile", {}).get("nickname", ""),
             email=kakao_account.get("email", ""),
         )
+
+    def get_oauth_url(self) -> str:
+        params = urlencode({
+            "client_id": settings.kakao_client_id,
+            "redirect_uri": settings.kakao_redirect_uri,
+            "response_type": "code",
+        })
+        return f"https://kauth.kakao.com/oauth/authorize?{params}"
