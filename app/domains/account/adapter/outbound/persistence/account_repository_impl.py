@@ -17,3 +17,16 @@ class AccountRepositoryImpl(AccountRepository):
         if orm is None:
             return None
         return AccountMapper.to_entity(orm)
+
+    def find_by_kakao_id(self, kakao_id: str) -> Optional[Account]:
+        orm = self.db.query(AccountORM).filter(AccountORM.kakao_id == kakao_id).first()
+        if orm is None:
+            return None
+        return AccountMapper.to_entity(orm)
+
+    def save(self, account: Account) -> Account:
+        orm = AccountMapper.to_orm(account)
+        self.db.add(orm)
+        self.db.commit()
+        self.db.refresh(orm)
+        return AccountMapper.to_entity(orm)

@@ -12,3 +12,12 @@ class AccountMapper:
             name=orm.name,
             created_at=orm.created_at,
         )
+
+    @staticmethod
+    def to_orm(account: Account) -> AccountORM:
+        return AccountORM(
+            kakao_id=account.kakao_id,
+            name=account.name,
+            email=account.email,
+            created_at=account.created_at,
+        )
