@@ -12,3 +12,4 @@ class KakaoAccessTokenResponse(BaseModel):
     email: str
     is_registered: bool
     account_id: Optional[int] = None
+    temp_token: Optional[str] = None

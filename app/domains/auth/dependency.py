@@ -1,14 +1,16 @@
 from fastapi import Depends
-from sqlalchemy.orm import Session
 
 from app.domains.account.adapter.outbound.persistence.account_repository import AccountRepository
 from app.domains.account.application.usecase.check_account_registration_usecase import CheckAccountRegistrationUseCase
 from app.domains.account.dependency import get_account_repository, get_check_account_registration_usecase
 from app.domains.auth.adapter.outbound.external.kakao_auth_client import KakaoAuthClient
 from app.domains.auth.adapter.outbound.external.kakao_auth_port import KakaoAuthPort
+from app.domains.auth.adapter.outbound.in_memory.temp_token_repository import TempTokenRepository
+from app.domains.auth.adapter.outbound.in_memory.temp_token_repository_impl import TempTokenRepositoryImpl
 from app.domains.auth.application.usecase.kakao_login_usecase import KakaoLoginUseCase
 from app.domains.auth.application.usecase.request_kakao_access_token_usecase import RequestKakaoAccessTokenUseCase
 from app.domains.auth.application.usecase.request_kakao_oauth_link_usecase import RequestKakaoOauthLinkUseCase
+from app.infrastructure.cache.redis_client import get_redis
 from app.infrastructure.security.jwt_provider import JwtProvider
 
 
@@ -34,8 +36,13 @@ def get_request_kakao_oauth_link_usecase(
     return RequestKakaoOauthLinkUseCase(kakao_auth_port)
 
 
+def get_temp_token_repository() -> TempTokenRepository:
+    return TempTokenRepositoryImpl(get_redis())
+
+
 def get_request_kakao_access_token_usecase(
     kakao_auth_port: KakaoAuthPort = Depends(get_kakao_auth_port),
     check_account_registration_usecase: CheckAccountRegistrationUseCase = Depends(get_check_account_registration_usecase),
+    temp_token_repository: TempTokenRepository = Depends(get_temp_token_repository),
 ) -> RequestKakaoAccessTokenUseCase:
-    return RequestKakaoAccessTokenUseCase(kakao_auth_port, check_account_registration_usecase)
+    return RequestKakaoAccessTokenUseCase(kakao_auth_port, check_account_registration_usecase, temp_token_repository)
