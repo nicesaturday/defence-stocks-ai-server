@@ -14,8 +14,8 @@ class SessionRepositoryImpl(SessionRepository):
     def _key(self, token: str) -> str:
         return f"session:{token}"
 
-    def save(self, token: str, member_id: int) -> None:
-        data = json.dumps({"member_id": member_id})
+    def save(self, token: str, account_id: int, kakao_access_token: str) -> None:
+        data = json.dumps({"account_id": account_id, "kakao_access_token": kakao_access_token})
         self.redis_client.setex(
             self._key(token),
             settings.session_expire_minutes * 60,
