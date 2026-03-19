@@ -3,6 +3,8 @@ import uuid
 
 from app.domains.account.application.usecase.check_account_registration_usecase import CheckAccountRegistrationUseCase
 from app.domains.auth.adapter.outbound.external.kakao_auth_port import KakaoAuthPort
+from app.domains.auth.adapter.outbound.in_memory.kakao_token_repository import KakaoTokenRepository
+from app.domains.auth.adapter.outbound.in_memory.session_repository import SessionRepository
 from app.domains.auth.adapter.outbound.in_memory.temp_token_repository import TempTokenRepository
 from app.domains.auth.application.response.kakao_access_token_response import KakaoAccessTokenResponse
 
@@ -15,10 +17,14 @@ class RequestKakaoAccessTokenUseCase:
         kakao_auth_port: KakaoAuthPort,
         check_account_registration_usecase: CheckAccountRegistrationUseCase,
         temp_token_repository: TempTokenRepository,
+        session_repository: SessionRepository,
+        kakao_token_repository: KakaoTokenRepository,
     ):
         self.kakao_auth_port = kakao_auth_port
         self.check_account_registration_usecase = check_account_registration_usecase
         self.temp_token_repository = temp_token_repository
+        self.session_repository = session_repository
+        self.kakao_token_repository = kakao_token_repository
 
     def execute(self, authorization_code: str) -> KakaoAccessTokenResponse:
         token_info = self.kakao_auth_port.get_kakao_access_token(authorization_code)
@@ -29,7 +35,14 @@ class RequestKakaoAccessTokenUseCase:
         registration = self.check_account_registration_usecase.execute(user_info.email)
 
         temp_token = None
-        if not registration.is_registered:
+        user_token = None
+
+        if registration.is_registered:
+            user_token = str(uuid.uuid4())
+            self.session_repository.save(user_token, registration.account_id)
+            self.kakao_token_repository.save(registration.account_id, token_info.access_token)
+            logger.info("기존 회원 로그인 - account_id: %d, user_token: %s...", registration.account_id, user_token[:8])
+        else:
             temp_token = str(uuid.uuid4())
             self.temp_token_repository.save(temp_token, token_info.access_token)
             logger.info("임시 토큰 발급 - token: %s...", temp_token[:8])
@@ -44,4 +57,5 @@ class RequestKakaoAccessTokenUseCase:
             is_registered=registration.is_registered,
             account_id=registration.account_id,
             temp_token=temp_token,
+            user_token=user_token,
         )

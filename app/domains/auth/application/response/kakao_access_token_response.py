@@ -13,3 +13,4 @@ class KakaoAccessTokenResponse(BaseModel):
     is_registered: bool
     account_id: Optional[int] = None
     temp_token: Optional[str] = None
+    user_token: Optional[str] = None

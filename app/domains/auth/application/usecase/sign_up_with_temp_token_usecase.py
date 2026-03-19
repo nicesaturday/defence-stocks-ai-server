@@ -4,6 +4,7 @@ import uuid
 from app.domains.account.adapter.outbound.persistence.account_repository import AccountRepository
 from app.domains.account.domain.entity.account import Account
 from app.domains.auth.adapter.outbound.external.kakao_auth_port import KakaoAuthPort
+from app.domains.auth.adapter.outbound.in_memory.kakao_token_repository import KakaoTokenRepository
 from app.domains.auth.adapter.outbound.in_memory.session_repository import SessionRepository
 from app.domains.auth.adapter.outbound.in_memory.temp_token_repository import TempTokenRepository
 from app.domains.auth.application.request.sign_up_request import SignUpRequest
@@ -19,11 +20,13 @@ class SignUpWithTempTokenUseCase:
         account_repository: AccountRepository,
         kakao_auth_port: KakaoAuthPort,
         session_repository: SessionRepository,
+        kakao_token_repository: KakaoTokenRepository,
     ):
         self.temp_token_repository = temp_token_repository
         self.account_repository = account_repository
         self.kakao_auth_port = kakao_auth_port
         self.session_repository = session_repository
+        self.kakao_token_repository = kakao_token_repository
 
     def execute(self, temp_token: str, request: SignUpRequest) -> tuple[SignUpResponse, str]:
         kakao_access_token = self.temp_token_repository.find_by_token(temp_token)
@@ -42,7 +45,8 @@ class SignUpWithTempTokenUseCase:
         self.temp_token_repository.delete(temp_token)
 
         user_token = str(uuid.uuid4())
-        self.session_repository.save(user_token, account.account_id, kakao_access_token)
+        self.session_repository.save(user_token, account.account_id)
+        self.kakao_token_repository.save(account.account_id, kakao_access_token)
 
         logger.info("회원 가입 완료 - account_id: %d, user_token: %s...", account.account_id, user_token[:8])
 

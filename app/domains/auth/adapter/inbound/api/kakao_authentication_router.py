@@ -26,9 +26,9 @@ def request_access_token_after_redirection(
         raise HTTPException(status_code=400, detail="인가 코드가 누락되었습니다.")
 
     result = usecase.execute(code)
+    response = JSONResponse(content=result.model_dump())
 
     if result.temp_token:
-        response = JSONResponse(content=result.model_dump())
         response.set_cookie(
             key="temp_token",
             value=result.temp_token,
@@ -36,6 +36,13 @@ def request_access_token_after_redirection(
             max_age=5 * 60,
             samesite="lax",
         )
-        return response
 
-    return result
+    if result.user_token:
+        response.set_cookie(
+            key="user_token",
+            value=result.user_token,
+            httponly=True,
+            samesite="lax",
+        )
+
+    return response

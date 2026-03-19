@@ -1,4 +1,3 @@
-import json
 from typing import Optional
 
 import redis
@@ -14,19 +13,18 @@ class SessionRepositoryImpl(SessionRepository):
     def _key(self, token: str) -> str:
         return f"session:{token}"
 
-    def save(self, token: str, account_id: int, kakao_access_token: str) -> None:
-        data = json.dumps({"account_id": account_id, "kakao_access_token": kakao_access_token})
+    def save(self, token: str, account_id: int) -> None:
         self.redis_client.setex(
             self._key(token),
             settings.session_expire_minutes * 60,
-            data,
+            str(account_id),
         )
 
-    def find_by_token(self, token: str) -> Optional[dict]:
+    def find_by_token(self, token: str) -> Optional[int]:
         data = self.redis_client.get(self._key(token))
         if data is None:
             return None
-        return json.loads(data)
+        return int(data)
 
     def delete_by_token(self, token: str) -> None:
         self.redis_client.delete(self._key(token))
