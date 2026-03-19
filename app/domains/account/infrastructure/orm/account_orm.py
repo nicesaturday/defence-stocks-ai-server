@@ -7,7 +7,6 @@ from app.infrastructure.database.session import Base
 
 class AccountORM(Base):
     __tablename__ = "members"
-    __table_args__ = {"extend_existing": True}
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     kakao_id = Column(String(64), nullable=False, unique=True)
