@@ -4,7 +4,7 @@ from typing import Optional
 
 class SessionRepository(ABC):
     @abstractmethod
-    def save(self, token: str, member_id: int) -> None:
+    def save(self, token: str, account_id: int, kakao_access_token: str) -> None:
         pass
 
     @abstractmethod

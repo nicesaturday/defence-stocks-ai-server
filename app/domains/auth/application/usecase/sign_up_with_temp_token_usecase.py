@@ -1,0 +1,49 @@
+import logging
+import uuid
+
+from app.domains.account.adapter.outbound.persistence.account_repository import AccountRepository
+from app.domains.account.domain.entity.account import Account
+from app.domains.auth.adapter.outbound.external.kakao_auth_port import KakaoAuthPort
+from app.domains.auth.adapter.outbound.in_memory.session_repository import SessionRepository
+from app.domains.auth.adapter.outbound.in_memory.temp_token_repository import TempTokenRepository
+from app.domains.auth.application.request.sign_up_request import SignUpRequest
+from app.domains.auth.application.response.sign_up_response import SignUpResponse
+
+logger = logging.getLogger(__name__)
+
+
+class SignUpWithTempTokenUseCase:
+    def __init__(
+        self,
+        temp_token_repository: TempTokenRepository,
+        account_repository: AccountRepository,
+        kakao_auth_port: KakaoAuthPort,
+        session_repository: SessionRepository,
+    ):
+        self.temp_token_repository = temp_token_repository
+        self.account_repository = account_repository
+        self.kakao_auth_port = kakao_auth_port
+        self.session_repository = session_repository
+
+    def execute(self, temp_token: str, request: SignUpRequest) -> tuple[SignUpResponse, str]:
+        kakao_access_token = self.temp_token_repository.find_by_token(temp_token)
+        if kakao_access_token is None:
+            raise ValueError("임시 토큰이 만료되었거나 존재하지 않습니다.")
+
+        user_info = self.kakao_auth_port.get_kakao_user_info(kakao_access_token)
+
+        account = Account(
+            email=request.email,
+            kakao_id=user_info.kakao_id,
+            name=request.nickname,
+        )
+        account = self.account_repository.save(account)
+
+        self.temp_token_repository.delete(temp_token)
+
+        user_token = str(uuid.uuid4())
+        self.session_repository.save(user_token, account.account_id, kakao_access_token)
+
+        logger.info("회원 가입 완료 - account_id: %d, user_token: %s...", account.account_id, user_token[:8])
+
+        return SignUpResponse(nickname=request.nickname, email=request.email), user_token

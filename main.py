@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from app.domains.account.adapter.inbound.api.account_router import router as account_router
 from app.domains.auth.adapter.inbound.api.auth_router import router as auth_router
 from app.domains.auth.adapter.inbound.api.kakao_authentication_router import router as kakao_authentication_router
 from app.domains.account.infrastructure.orm.account_orm import AccountORM  # noqa: F401
@@ -12,6 +13,7 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 app.include_router(post_router)
+app.include_router(account_router)
 app.include_router(auth_router)
 app.include_router(kakao_authentication_router)
 
