@@ -5,6 +5,8 @@ from app.domains.account.application.usecase.check_account_registration_usecase 
 from app.domains.account.dependency import get_account_repository, get_check_account_registration_usecase
 from app.domains.auth.adapter.outbound.external.kakao_auth_client import KakaoAuthClient
 from app.domains.auth.adapter.outbound.external.kakao_auth_port import KakaoAuthPort
+from app.domains.auth.adapter.outbound.in_memory.kakao_token_repository import KakaoTokenRepository
+from app.domains.auth.adapter.outbound.in_memory.kakao_token_repository_impl import KakaoTokenRepositoryImpl
 from app.domains.auth.adapter.outbound.in_memory.session_repository import SessionRepository
 from app.domains.auth.adapter.outbound.in_memory.session_repository_impl import SessionRepositoryImpl
 from app.domains.auth.adapter.outbound.in_memory.temp_token_repository import TempTokenRepository
@@ -47,12 +49,21 @@ def get_session_repository() -> SessionRepository:
     return SessionRepositoryImpl(get_redis())
 
 
+def get_kakao_token_repository() -> KakaoTokenRepository:
+    return KakaoTokenRepositoryImpl(get_redis())
+
+
 def get_request_kakao_access_token_usecase(
     kakao_auth_port: KakaoAuthPort = Depends(get_kakao_auth_port),
     check_account_registration_usecase: CheckAccountRegistrationUseCase = Depends(get_check_account_registration_usecase),
     temp_token_repository: TempTokenRepository = Depends(get_temp_token_repository),
+    session_repository: SessionRepository = Depends(get_session_repository),
+    kakao_token_repository: KakaoTokenRepository = Depends(get_kakao_token_repository),
 ) -> RequestKakaoAccessTokenUseCase:
-    return RequestKakaoAccessTokenUseCase(kakao_auth_port, check_account_registration_usecase, temp_token_repository)
+    return RequestKakaoAccessTokenUseCase(
+        kakao_auth_port, check_account_registration_usecase,
+        temp_token_repository, session_repository, kakao_token_repository,
+    )
 
 
 def get_sign_up_with_temp_token_usecase(
@@ -60,5 +71,9 @@ def get_sign_up_with_temp_token_usecase(
     account_repository: AccountRepository = Depends(get_account_repository),
     kakao_auth_port: KakaoAuthPort = Depends(get_kakao_auth_port),
     session_repository: SessionRepository = Depends(get_session_repository),
+    kakao_token_repository: KakaoTokenRepository = Depends(get_kakao_token_repository),
 ) -> SignUpWithTempTokenUseCase:
-    return SignUpWithTempTokenUseCase(temp_token_repository, account_repository, kakao_auth_port, session_repository)
+    return SignUpWithTempTokenUseCase(
+        temp_token_repository, account_repository, kakao_auth_port,
+        session_repository, kakao_token_repository,
+    )

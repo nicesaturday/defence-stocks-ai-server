@@ -4,11 +4,11 @@ from typing import Optional
 
 class SessionRepository(ABC):
     @abstractmethod
-    def save(self, token: str, account_id: int, kakao_access_token: str) -> None:
+    def save(self, token: str, account_id: int) -> None:
         pass
 
     @abstractmethod
-    def find_by_token(self, token: str) -> Optional[dict]:
+    def find_by_token(self, token: str) -> Optional[int]:
         pass
 
     @abstractmethod
