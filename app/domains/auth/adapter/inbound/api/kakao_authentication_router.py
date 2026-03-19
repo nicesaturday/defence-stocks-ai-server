@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from starlette.responses import RedirectResponse
+from starlette.responses import JSONResponse, RedirectResponse
 
 from app.domains.auth.application.response.kakao_access_token_response import KakaoAccessTokenResponse
 from app.domains.auth.application.usecase.request_kakao_access_token_usecase import RequestKakaoAccessTokenUseCase
@@ -24,4 +24,18 @@ def request_access_token_after_redirection(
 ):
     if not code:
         raise HTTPException(status_code=400, detail="인가 코드가 누락되었습니다.")
-    return usecase.execute(code)
+
+    result = usecase.execute(code)
+
+    if result.temp_token:
+        response = JSONResponse(content=result.model_dump())
+        response.set_cookie(
+            key="temp_token",
+            value=result.temp_token,
+            httponly=True,
+            max_age=5 * 60,
+            samesite="lax",
+        )
+        return response
+
+    return result
