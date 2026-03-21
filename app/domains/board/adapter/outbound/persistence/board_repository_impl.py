@@ -19,6 +19,15 @@ class BoardRepositoryImpl(BoardRepository):
         self.db.refresh(orm)
         return BoardMapper.to_entity(orm)
 
+    def update(self, board: Board) -> Board:
+        orm = self.db.query(BoardORM).filter(BoardORM.id == board.board_id).first()
+        orm.title = board.title
+        orm.content = board.content
+        orm.updated_at = board.updated_at
+        self.db.commit()
+        self.db.refresh(orm)
+        return BoardMapper.to_entity(orm)
+
     def find_by_id(self, board_id: int) -> Optional[Board]:
         orm = self.db.query(BoardORM).filter(BoardORM.id == board_id).first()
         if orm is None:
