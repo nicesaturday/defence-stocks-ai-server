@@ -68,5 +68,7 @@ def get_request_kakao_access_token_usecase(
 
 def get_get_temp_user_info_usecase(
     temp_token_repository: TempTokenRepository = Depends(get_temp_token_repository),
+    session_repository: SessionRepository = Depends(get_session_repository),
+    account_repository: AccountRepository = Depends(get_account_repository),
 ) -> GetTempUserInfoUseCase:
-    return GetTempUserInfoUseCase(temp_token_repository)
+    return GetTempUserInfoUseCase(temp_token_repository, session_repository, account_repository)

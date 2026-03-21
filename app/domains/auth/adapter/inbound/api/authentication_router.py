@@ -10,12 +10,13 @@ router = APIRouter(prefix="/authentication", tags=["Authentication"])
 @router.get("/me", response_model=TempUserInfoResponse)
 def get_temp_user_info(
     temp_token: str = Cookie(None),
+    user_token: str = Cookie(None),
     usecase: GetTempUserInfoUseCase = Depends(get_get_temp_user_info_usecase),
 ):
-    if not temp_token:
-        raise HTTPException(status_code=400, detail="임시 토큰이 누락되었습니다.")
+    if not temp_token and not user_token:
+        raise HTTPException(status_code=400, detail="토큰이 누락되었습니다.")
 
     try:
-        return usecase.execute(temp_token)
+        return usecase.execute(temp_token=temp_token, user_token=user_token)
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
