@@ -6,6 +6,8 @@ from app.domains.auth.adapter.inbound.api.auth_router import router as auth_rout
 from app.domains.auth.adapter.inbound.api.authentication_router import router as authentication_router
 from app.domains.auth.adapter.inbound.api.kakao_authentication_router import router as kakao_authentication_router
 from app.domains.account.infrastructure.orm.account_orm import AccountORM  # noqa: F401
+from app.domains.board.adapter.inbound.api.board_router import router as board_router
+from app.domains.board.infrastructure.orm.board_orm import BoardORM  # noqa: F401
 from app.domains.post.adapter.inbound.api.post_router import router as post_router
 from app.domains.post.infrastructure.orm.post_orm import PostORM  # noqa: F401
 from app.infrastructure.config.settings import settings
@@ -24,6 +26,7 @@ app.add_middleware(
 )
 
 app.include_router(post_router)
+app.include_router(board_router)
 app.include_router(account_router)
 app.include_router(auth_router)
 app.include_router(authentication_router)
